@@ -25,6 +25,16 @@ export const IgProvider = ({children}) => {
     }
   };
 
+  const handleSyncMedia = async () => {
+    try {
+      console.log('sync media');
+      const response = await fetchAuthenticatedApi('/syncMedia', {method: 'PUT'});
+      setMedia(response.data);
+    } catch (error) {
+      console.error('Error fetching media data:', error);
+    }
+  };
+
   const handleDisconnect = async () => {
     try {
       await axios.post('https://localhost:3000/authInsApi/disconnect');
@@ -38,7 +48,15 @@ export const IgProvider = ({children}) => {
 
   return (
     <IgContext.Provider
-      value={{isConnected, media, setMedia, setIsConnected, fetchMediaData, handleDisconnect}}
+      value={{
+        isConnected,
+        media,
+        setMedia,
+        setIsConnected,
+        fetchMediaData,
+        handleDisconnect,
+        handleSyncMedia
+      }}
     >
       {children}
     </IgContext.Provider>

@@ -3,10 +3,15 @@ import React, {useContext} from 'react';
 
 import {IgContext} from '../../context/IgContext';
 const LoginIg = () => {
-  const {media, isConnected, setIsConnected, fetchMediaData, handleDisconnect} = useContext(
-    IgContext
-  );
-  const handleLogin = () => {
+  const {
+    media,
+    handleSyncMedia,
+    isConnected,
+    setIsConnected,
+    fetchMediaData,
+    handleDisconnect
+  } = useContext(IgContext);
+  const handleConnectIg = () => {
     const width = 600;
     const height = 700;
     const left = window.innerWidth / 2 - width / 2;
@@ -31,23 +36,24 @@ const LoginIg = () => {
       }, 1000);
     }
   };
+
   return (
     <>
       <Card>
         {!isConnected ? (
-          <Button onClick={handleLogin} variant="primary">
+          <Button onClick={handleConnectIg} variant="primary">
             Connect with Instagram
           </Button>
         ) : (
           <InlineStack gap={200}>
-            <Text fontWeight="bold">Connected to @{media?.currentUser?.username}</Text>
-            <Button variant="plain" textAlign="center">
+            <Text fontWeight="bold">Connected to @{media?.userId}</Text>
+            <Button variant="plain" onClick={handleConnectIg} textAlign="center">
               Change Account
             </Button>
             <Button variant="plain" textAlign="center" onClick={handleDisconnect}>
               Disconnect
             </Button>
-            <Button variant="plain" textAlign="center">
+            <Button variant="plain" textAlign="center" onClick={handleSyncMedia}>
               Sync
             </Button>
           </InlineStack>

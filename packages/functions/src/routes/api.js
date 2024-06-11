@@ -20,5 +20,6 @@ export default function getRoutes(prefix = '/api') {
   router.get('/feed', feedController.getFeed);
   router.put('/feed', feedController.updateFeeds);
   router.get('/media', mediaController.getMedia);
+  router.put('/syncMedia', mediaController.handleSyncMedia);
   return router;
 }

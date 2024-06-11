@@ -50,3 +50,23 @@ export async function addOrUpdateMedia(shopId, mediaList, userId, limit = 10) {
 
   await batch.commit();
 }
+
+export async function deleteMediaByShopId(shopId) {
+  try {
+    const querySnapshot = await mediaRef.where('shopId', '==', shopId).get();
+    if (querySnapshot.empty) {
+      console.log('No matching documents.');
+      return;
+    }
+
+    let batch = firestore.batch();
+    querySnapshot.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    console.log(`Deleted all media documents for shopId: ${shopId}`);
+  } catch (error) {
+    console.error('Error deleting media documents:', error);
+  }
+}
