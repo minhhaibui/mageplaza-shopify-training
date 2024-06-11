@@ -59,7 +59,7 @@ class InstagramApi {
   async fetchMediaData(token) {
     try {
       const response = await axios.get(
-        `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,permalink,thumbnail_url,timestamp&limit=30&access_token=${token}`
+        `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,permalink,thumbnail_url,timestamp&access_token=${token}`
       );
       return response.data.data;
     } catch (error) {
@@ -91,39 +91,11 @@ class InstagramApi {
     }
   }
 
-  async retrieveUserMedia(
-    accessToken,
-    after = '',
-    fields = 'id,cover_image_url,embed_link,title,create_time,duration,share_url'
-  ) {
-    const apiUrl = `${TIKTOK_BASE_URL}/video/list/`;
-    const headers = {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
-    };
-    let cursor = null;
-    let videoList = [];
-
-    const requestData = {
-      max_count: 20,
-      cursor: cursor
-    };
-    if (after.length) {
-      requestData.after = after;
-    }
-    do {
-      const response = await axios.post(apiUrl, requestData, {headers, params: {fields}});
-      const {error, ...restOfData} = response.data;
-      if (error.code !== ERROR_CODE) {
-        cursor = response.data.data.cursor;
-        requestData.cursor = cursor;
-      } else {
-        cursor = response.data.data.cursor;
-        requestData.cursor = cursor;
-        videoList = [...videoList, ...restOfData.data.videos];
-      }
-    } while (cursor);
-    return camelizeKeys(videoList);
+  async fetchMediaById(token, mediaId) {
+    const response = await axios.get(
+      `${INSTAGRAM_BASE_URL}/${mediaId}?fields=id,caption,media_type,media_url,permalink,timestamp&access_token=${token}`
+    );
+    return response.data;
   }
 }
 export default InstagramApi;

@@ -1,11 +1,60 @@
 import {getCurrentShop} from '../helpers/auth';
 import InstagramApi from '../helpers/instagramApi';
-import {findMediaByShopId, addOrUpdateMedia} from '../repositories/mediaIgRepository';
+import {
+  findMediaByShopId,
+  addOrUpdateMedia,
+  deleteMediaByShopId,
+  refreshMediaUrls,
+  updateMediaUrls,
+  checkExpiredMedia
+} from '../repositories/mediaIgRepository';
 
 const igApi = new InstagramApi();
 
+// export async function getMedia(ctx) {
+//   console.log('_________________________media______________________');
+//   const shopId = getCurrentShop(ctx);
+//   const mediaCurrent = await findMediaByShopId(shopId);
+//   const token = ctx.cookies.get('instagram_token');
+//   const [newMedia, currentUser] = await Promise.all([
+//     igApi.fetchMediaData(token),
+//     igApi.getCurrentUser(token)
+//   ]);
+
+//   //add new media when connected for the first time or change account
+//   if (mediaCurrent.empty || mediaCurrent.docs[0].data().userId !== currentUser.id) {
+//     if (!mediaCurrent.empty) {
+//       await deleteMediaByShopId(shopId);
+//     }
+//     await addOrUpdateMedia(shopId, newMedia, currentUser.id);
+//     return (ctx.body = {
+//       success: true,
+//       data: {
+//         userId: currentUser.id,
+//         shopId: shopId,
+//         media: newMedia
+//       }
+//     });
+//   }
+
+//   let allMedia = [];
+//   mediaCurrent.forEach(doc => {
+//     allMedia = allMedia.concat(doc.data().media);
+//   });
+//   console.log({allMedia});
+
+//   return (ctx.body = {
+//     success: true,
+//     data: {
+//       userId: mediaCurrent.docs[0].data().userId,
+//       shopId: shopId,
+//       media: allMedia
+//     }
+//   });
+// }
+
 export async function getMedia(ctx) {
-  console.log('_________________________media______________________');
+  console.log('_________________________get media______________________');
   const shopId = getCurrentShop(ctx);
   const mediaCurrent = await findMediaByShopId(shopId);
   const token = ctx.cookies.get('instagram_token');
@@ -14,17 +63,13 @@ export async function getMedia(ctx) {
     igApi.getCurrentUser(token)
   ]);
 
+  // Add new media when connected for the first time or change account
   if (mediaCurrent.empty || mediaCurrent.docs[0].data().userId !== currentUser.id) {
+    console.log('________________addNew media first time or change account____________');
     if (!mediaCurrent.empty) {
-      const batch = firestore.batch();
-      mediaCurrent.forEach(doc => {
-        batch.delete(doc.ref);
-      });
-      await batch.commit();
+      await deleteMediaByShopId(shopId);
     }
-
     await addOrUpdateMedia(shopId, newMedia, currentUser.id);
-
     return (ctx.body = {
       success: true,
       data: {
@@ -35,12 +80,19 @@ export async function getMedia(ctx) {
     });
   }
 
+  // Check and refresh expired media URLs
+  const expiredMediaIds = await checkExpiredMedia(shopId);
+  if (expiredMediaIds.length > 0) {
+    console.log('____________refresh mediaUrl__________');
+    const refreshedMedia = await refreshMediaUrls(token, expiredMediaIds);
+    await updateMediaUrls(shopId, refreshedMedia);
+  }
+
   let allMedia = [];
   mediaCurrent.forEach(doc => {
     allMedia = allMedia.concat(doc.data().media);
   });
-  console.log({allMedia});
-
+  console.log('__________connect Normal_________');
   return (ctx.body = {
     success: true,
     data: {
@@ -53,37 +105,23 @@ export async function getMedia(ctx) {
 
 export async function handleSyncMedia(ctx) {
   const shopId = getCurrentShop(ctx);
-  const mediaCurrent = await findMediaByShopId(shopId);
   const token = ctx.cookies.get('instagram_token');
+
   const [newMedia, currentUser] = await Promise.all([
     igApi.fetchMediaData(token),
     igApi.getCurrentUser(token)
   ]);
 
-  let allExistingMedia = [];
-  mediaCurrent.forEach(doc => {
-    allExistingMedia = allExistingMedia.concat(doc.data().media);
-  });
+  await deleteMediaByShopId(shopId);
 
-  // Filter out media that already exist in Firestore
-  const uniqueNewMedia = newMedia.filter(
-    item => !allExistingMedia.some(existingItem => existingItem.id === item.id)
-  );
-
-  // If there are new media, add or update them in Firestore
-  if (uniqueNewMedia.length > 0) {
-    await addOrUpdateMedia(shopId, uniqueNewMedia, currentUser.id);
-  }
-
-  // // Combine existing and new media for the response
-  // const combinedMedia = allExistingMedia.concat(uniqueNewMedia);
+  await addOrUpdateMedia(shopId, newMedia, currentUser.id);
 
   return (ctx.body = {
     success: true,
     data: {
       userId: currentUser.id,
       shopId: shopId,
-      media: newMedia // Return the combined media (limit 10 items)
+      media: newMedia
     }
   });
 }
