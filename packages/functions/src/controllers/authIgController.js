@@ -1,5 +1,5 @@
 import InstagramApi from '../helpers/instagramApi';
-
+import {addUser, deleteUser} from './userController';
 const igApi = new InstagramApi();
 
 export const authInstagram = async ctx => {
@@ -16,13 +16,21 @@ export const authInstagram = async ctx => {
 export const callbackInstagram = async ctx => {
   try {
     const {code} = ctx.query;
-    const accessToken = await igApi.getAccessToken(code);
-    ctx.cookies.set('instagram_token', accessToken, {
+    const shortAccessToken = await igApi.getAccessToken(code);
+    const {access_token, expires_in} = await igApi.getLongAccessToken(shortAccessToken);
+    await addUser(access_token, expires_in);
+    ctx.state.instagramAccessToken = access_token;
+
+    console.log(
+      '____________accessToken in ctx callback____________',
+      ctx.state.instagramAccessToken
+    );
+    ctx.cookies.set('instagram_token', access_token, {
       maxAge: 3 * 60 * 60 * 1000
     });
     ctx.body = `
     <script>
-      window.opener.localStorage.setItem('instagram_token', '${accessToken}');
+      window.opener.localStorage.setItem('instagram_token', '${access_token}');
       window.close();
     </script>
   `;
@@ -33,26 +41,9 @@ export const callbackInstagram = async ctx => {
   }
 };
 
-export const getMedia = async ctx => {
-  const token = ctx.cookies.get('instagram_token');
-  try {
-    const [media, currentUser] = await Promise.all([
-      igApi.fetchMediaData(token),
-      igApi.getCurrentUser(token)
-    ]);
-    ctx.body = {
-      success: true,
-      data: {media, currentUser}
-    };
-  } catch (error) {
-    console.error('Error fetching media data:', error);
-    ctx.status = 500;
-    ctx.body = 'Error fetching media data';
-  }
-};
-
 export const disconnectInstagram = async ctx => {
   try {
+    // await deleteUser(userId);
     ctx.cookies.set('instagram_token', null, {
       httpOnly: true,
       maxAge: 0 // Immediately expire the cookie

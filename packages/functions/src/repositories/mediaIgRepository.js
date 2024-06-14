@@ -1,52 +1,28 @@
 import {Firestore} from '@google-cloud/firestore';
-import InstagramApi from '../helpers/instagramApi';
-const igApi = new InstagramApi();
 
 const firestore = new Firestore();
 /** @type CollectionReference */
 const mediaRef = firestore.collection('media');
 
-export async function addOneMedia(data) {
-  return await mediaRef.add(data);
-}
-
 export async function findMediaByShopId(shopId) {
-  const querySnapshot = await mediaRef.where('shopId', '==', shopId).get();
-  return querySnapshot;
-}
-
-export async function addOrUpdateMedia(shopId, mediaList, userId, limit = 5) {
-  const mediaCurrent = await findMediaByShopId(shopId);
-  const batch = firestore.batch();
-  let remainingMedia = mediaList.slice();
-  const timeConnect = new Date();
-
-  mediaCurrent.forEach(doc => {
-    const data = doc.data();
-    const currentMediaCount = data.media.length;
-    if (currentMediaCount < limit && remainingMedia.length > 0) {
-      const mediaToAdd = remainingMedia.slice(0, limit - currentMediaCount);
-      batch.update(doc.ref, {
-        media: Firestore.FieldValue.arrayUnion(...mediaToAdd),
-        TimeConnect: timeConnect
-      });
-      remainingMedia = remainingMedia.slice(mediaToAdd.length);
+  try {
+    const querySnapshot = await mediaRef.where('shopId', '==', shopId).get();
+    if (querySnapshot.empty) {
+      return null;
     }
-  });
-
-  // Tạo các tài liệu mới nếu còn media còn lại trong remainingMedia
-  while (remainingMedia.length > 0) {
-    const newDocRef = mediaRef.doc();
-    batch.set(newDocRef, {
-      userId: userId,
-      shopId: shopId,
-      media: remainingMedia.slice(0, limit),
-      TimeConnect: timeConnect
+    const allMedia = [];
+    querySnapshot.forEach(doc => {
+      allMedia.push(...doc.data().media);
     });
-    remainingMedia = remainingMedia.slice(limit);
+    return {
+      userId: querySnapshot.docs[0].data().userId,
+      shopId: shopId,
+      media: allMedia,
+      docs: querySnapshot.docs
+    };
+  } catch (error) {
+    console.error('Error finding media by shopId:', error);
   }
-
-  await batch.commit();
 }
 
 export async function deleteMediaByShopId(shopId) {
@@ -67,54 +43,119 @@ export async function deleteMediaByShopId(shopId) {
   }
 }
 
-export async function checkExpiredMedia(shopId) {
-  const mediaCurrent = await findMediaByShopId(shopId);
-  const currentTime = new Date();
-  const dayInMilliseconds = 24 * 60 * 60 * 1000;
-  const imageExpiry = 3 * dayInMilliseconds;
-  const videoExpiry = 1.5 * dayInMilliseconds;
-  let expiredMedia = [];
+export async function addOrUpdateMedia(shopId, mediaList, userId, limit = 5) {
+  try {
+    const batch = firestore.batch();
+    const mediaData = await findMediaByShopId(shopId);
 
-  mediaCurrent.forEach(doc => {
-    const data = doc.data();
-    const mediaTimestamp = data.TimeConnect.toDate();
-    const expiredItems = data.media.filter(media => {
-      const mediaAge = currentTime - mediaTimestamp;
-      return (
-        (media.media_type === 'IMAGE' && mediaAge > imageExpiry) ||
-        (media.media_type === 'VIDEO' && mediaAge > videoExpiry)
-      );
-    });
+    // Tạo một Set để lưu trữ các id của media hiện có trong Firestore
+    const existingMediaIds = new Set();
+    const currentMediaMap = new Map();
 
-    if (expiredItems.length > 0) {
-      expiredMedia = expiredMedia.concat(expiredItems.map(item => item.id));
+    if (mediaData) {
+      mediaData.docs.forEach(doc => {
+        const data = doc.data();
+        const mediaArray = data.media || [];
+        currentMediaMap.set(doc.id, mediaArray);
+        mediaArray.forEach(media => existingMediaIds.add(media.id));
+      });
     }
-  });
 
-  return expiredMedia;
-}
+    // Tạo một Set để lưu trữ các id media từ Instagram
+    const mediaIdsFromInstagram = new Set(mediaList.map(media => media.id));
 
-export async function refreshMediaUrls(token, mediaIds) {
-  const refreshedMedia = [];
-  for (const mediaId of mediaIds) {
-    const mediaData = await igApi.fetchMediaById(token, mediaId);
-    refreshedMedia.push(mediaData);
-  }
-  return refreshedMedia;
-}
-
-export async function updateMediaUrls(shopId, refreshedMedia) {
-  const mediaCurrent = await findMediaByShopId(shopId);
-  let batch = firestore.batch();
-
-  mediaCurrent.forEach(doc => {
-    const data = doc.data();
-    const updatedMedia = data.media.map(media => {
-      const refreshed = refreshedMedia.find(item => item.id === media.id);
-      return refreshed ? {...media, media_url: refreshed.media_url} : media;
+    // Xác định media cần xóa
+    const mediaToDelete = [];
+    currentMediaMap.forEach((mediaArray, docId) => {
+      mediaArray.forEach(media => {
+        if (!mediaIdsFromInstagram.has(media.id)) {
+          mediaToDelete.push({docId, media});
+        }
+      });
     });
-    batch.update(doc.ref, {media: updatedMedia, TimeConnect: new Date()});
-  });
 
-  await batch.commit();
+    // Xóa các media
+    mediaToDelete.forEach(({docId, media}) => {
+      const mediaArray = currentMediaMap.get(docId).filter(m => m.id !== media.id);
+      if (mediaArray.length === 0) {
+        batch.delete(mediaRef.doc(docId));
+        currentMediaMap.delete(docId);
+      } else {
+        batch.update(mediaRef.doc(docId), {
+          media: mediaArray
+        });
+        currentMediaMap.set(docId, mediaArray);
+      }
+    });
+
+    // Thêm các media mới từ Instagram vào Firestore
+    let updatedMedia = [];
+    mediaList.forEach(media => {
+      if (!existingMediaIds.has(media.id)) {
+        updatedMedia.push(media);
+        existingMediaIds.add(media.id);
+      }
+    });
+
+    currentMediaMap.forEach((mediaArray, docId) => {
+      if (updatedMedia.length > 0 && mediaArray.length < limit) {
+        const mediaToAdd = updatedMedia.slice(0, limit - mediaArray.length);
+        const newMediaArray = [...mediaArray, ...mediaToAdd];
+        batch.set(
+          mediaRef.doc(docId),
+          {
+            userId: userId,
+            shopId: shopId,
+            media: newMediaArray.slice(0, limit)
+          },
+          {merge: true}
+        );
+        updatedMedia = updatedMedia.slice(mediaToAdd.length);
+        currentMediaMap.set(docId, newMediaArray);
+      }
+    });
+
+    while (updatedMedia.length > 0) {
+      const newDocRef = mediaRef.doc();
+      batch.set(newDocRef, {
+        userId: userId,
+        shopId: shopId,
+        media: updatedMedia.slice(0, limit)
+      });
+      updatedMedia = updatedMedia.slice(limit);
+    }
+
+    await batch.commit();
+
+    console.log('Sync media with Instagram successfully.');
+  } catch (error) {
+    console.error('Error syncing media with Instagram:', error);
+    throw error;
+  }
+}
+
+export async function refreshAllMediaUrls(shopId, token) {
+  try {
+    const mediaData = await findMediaByShopId(shopId);
+    if (!mediaData || !mediaData.docs.length) {
+      console.log('No media found for the given shopId.');
+      return;
+    }
+    const batch = firestore.batch();
+    const newMediaList = await igApi.fetchMediaData(token);
+    const newMediaMap = new Map(newMediaList.map(media => [media.id, media]));
+    mediaData.docs.forEach(doc => {
+      const updatedMediaArray = doc.data().media.map(m => {
+        const refreshed = newMediaMap.get(m.id);
+        return refreshed ? {...m, media_url: refreshed.media_url} : m;
+      });
+
+      batch.update(mediaRef.doc(doc.id), {media: updatedMediaArray});
+    });
+    await batch.commit();
+    console.log('Refreshed all media URLs successfully.');
+  } catch (error) {
+    console.error('Error refreshing all media URLs:', error);
+    throw error;
+  }
 }

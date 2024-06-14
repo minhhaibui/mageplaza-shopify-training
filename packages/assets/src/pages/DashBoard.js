@@ -36,6 +36,7 @@ const DashBoard = () => {
           </Grid.Cell>
           <Grid.Cell columnSpan={{xs: 6, sm: 6, md: 3, lg: 8, xl: 8}}>
             <Preview feedConfig={feedConfig}></Preview>
+            {/* <GlobalComponent></GlobalComponent> */}
           </Grid.Cell>
         </Grid>
       </IgProvider>

@@ -17,6 +17,7 @@ export default function getRoutes(prefix = '/api') {
   router.get('/shop/embedStatus', shopController.getEmbedStatus);
   router.put('/republish', shopController.republishTheme);
   router.get('/subscription', subscriptionController.getSubscription);
+  // router.post("/login")
   router.get('/feed', feedController.getFeed);
   router.put('/feed', feedController.updateFeeds);
   router.get('/media', mediaController.getMedia);

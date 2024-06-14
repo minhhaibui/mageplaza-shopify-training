@@ -41,6 +41,46 @@ class InstagramApi {
       throw error;
     }
   }
+
+  async getLongAccessToken(shortLivedToken) {
+    const data = {
+      grant_type: 'ig_exchange_token',
+      client_secret: this._clientSecret,
+      access_token: shortLivedToken
+    };
+
+    try {
+      const response = await axios.get(`https://graph.instagram.com/access_token`, {
+        params: data,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error getting long-lived access token:', error);
+      throw error;
+    }
+  }
+
+  async refreshAccessToken(longLivedToken) {
+    const params = {
+      grant_type: 'ig_refresh_token',
+      access_token: longLivedToken
+    };
+
+    try {
+      const response = await axios.get('https://graph.instagram.com/refresh_access_token', {
+        params: params
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error refreshing access token:', error);
+      throw error;
+    }
+  }
   async getCurrentUser(token) {
     try {
       const response = await axios.get(`https://graph.instagram.com/me`, {
@@ -65,29 +105,6 @@ class InstagramApi {
     } catch (error) {
       console.error('Error fetching media data:', error);
       throw error;
-    }
-  }
-
-  refreshToken(refreshToken) {
-    const requestBody = new URLSearchParams({
-      grant_type: 'refresh_token',
-      client_key: this._clientKey,
-      client_secret: this._clientSecret,
-      refresh_token: refreshToken
-    });
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Cache-Control': 'no-cache'
-    };
-
-    try {
-      return axios
-        .post(`${TIKTOK_BASE_URL}/oauth/token/`, requestBody, {headers})
-        .then(response => {
-          return response.data;
-        });
-    } catch (e) {
-      return {access_token: false};
     }
   }
 

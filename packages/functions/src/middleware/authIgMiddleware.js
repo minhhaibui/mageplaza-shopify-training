@@ -1,6 +1,6 @@
 const checkAuth = async (ctx, next) => {
-  const token = ctx.cookies.get('instagram_token');
-  if (!token) {
+  const currentUser = ctx.state.userCurrent;
+  if (!currentUser) {
     ctx.status = 401;
     ctx.body = 'Unauthorized';
     return;
