@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {getAPI} from './helppers/getApi';
 import GlobalPreview from '../../assets/src/components/Global/GlobalPreview';
 
 const App = () => {
