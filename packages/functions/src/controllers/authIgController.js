@@ -1,5 +1,7 @@
+import {getCurrentUserIg} from '../helpers/auth';
 import InstagramApi from '../helpers/instagramApi';
 import {addUser, deleteUser} from './userController';
+import {getUser} from '../repositories/userRepository';
 const igApi = new InstagramApi();
 
 export const authInstagram = async ctx => {
@@ -18,19 +20,20 @@ export const callbackInstagram = async ctx => {
     const {code} = ctx.query;
     const shortAccessToken = await igApi.getAccessToken(code);
     const {access_token, expires_in} = await igApi.getLongAccessToken(shortAccessToken);
-    await addUser(access_token, expires_in);
-    ctx.state.instagramAccessToken = access_token;
+    const [userIg, currentUser] = await Promise.all([
+      igApi.getCurrentUser(access_token),
+      getUser()
+    ]);
+    if (!currentUser) {
+      await addUser(userIg, access_token, expires_in);
+    } else if (userIg.id !== currentUser.userId) {
+      await deleteUser(currentUser.userId);
+      await addUser(userIg, access_token, expires_in);
+    }
 
-    console.log(
-      '____________accessToken in ctx callback____________',
-      ctx.state.instagramAccessToken
-    );
-    ctx.cookies.set('instagram_token', access_token, {
-      maxAge: 3 * 60 * 60 * 1000
-    });
     ctx.body = `
     <script>
-      window.opener.localStorage.setItem('instagram_token', '${access_token}');
+    window.opener.localStorage.setItem('logined', '${true}');
       window.close();
     </script>
   `;
@@ -43,11 +46,8 @@ export const callbackInstagram = async ctx => {
 
 export const disconnectInstagram = async ctx => {
   try {
-    // await deleteUser(userId);
-    ctx.cookies.set('instagram_token', null, {
-      httpOnly: true,
-      maxAge: 0 // Immediately expire the cookie
-    });
+    const {userId} = getCurrentUserIg(ctx);
+    await deleteUser(userId);
     ctx.status = 200;
     ctx.body = 'Disconnected successfully';
   } catch (error) {

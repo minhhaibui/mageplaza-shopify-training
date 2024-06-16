@@ -1,5 +1,7 @@
-const checkAuth = async (ctx, next) => {
-  const currentUser = ctx.state.userCurrent;
+import {getUser} from '../repositories/userRepository';
+
+const checkAuthIg = async (ctx, next) => {
+  const currentUser = await getUser();
   if (!currentUser) {
     ctx.status = 401;
     ctx.body = 'Unauthorized';
@@ -7,14 +9,12 @@ const checkAuth = async (ctx, next) => {
   }
 
   try {
-    // Optionally, you can add logic to verify the token if needed
-    ctx.state.token = token;
+    ctx.state.currentUserIg = currentUser;
     await next();
   } catch (error) {
-    console.error('Error verifying token:', error);
     ctx.status = 500;
     ctx.body = 'Internal server error';
   }
 };
 
-export default checkAuth;
+export default checkAuthIg;

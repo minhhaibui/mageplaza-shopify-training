@@ -11,10 +11,16 @@ export function getCurrentShop(ctx) {
 
 /**
  * Get current user from Koa context
- *
  * @param ctx
  * @returns {IUserContext}
  */
 export function getCurrentUser(ctx) {
   return ctx.state.user;
+}
+export function getCurrentUserIg(ctx) {
+  return ctx.state.currentUserIg;
+}
+
+export function getTokenUserIg(ctx) {
+  return getCurrentUserIg(ctx).accessToken;
 }

@@ -1,48 +1,31 @@
 // IgContext.js
 import React, {createContext, useState, useEffect} from 'react';
-import axios from 'axios';
 import {fetchAuthenticatedApi} from '../helpers';
 export const IgContext = createContext();
 
 export const IgProvider = ({children}) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [media, setMedia] = useState([]);
-  console.log('media Context', media);
+  const [data, setData] = useState([]);
+  console.log('media Context', data);
   useEffect(() => {
-    const token = localStorage.getItem('instagram_token');
-    if (token) {
+    const logined = localStorage.getItem('logined');
+    if (logined) {
       setIsConnected(true);
-      fetchMediaData();
+      fetchData();
     }
   }, []);
 
-  const fetchMediaData = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetchAuthenticatedApi('/media');
-      setMedia(response.data);
+      const [resMedia, resUser] = await Promise.all([
+        fetchAuthenticatedApi('/media'),
+        fetchAuthenticatedApi('/user')
+      ]);
+      const mediaData = resMedia.data;
+      const userData = resUser.data;
+      setData({mediaData, userData});
     } catch (error) {
       console.error('Error fetching media data:', error);
-    }
-  };
-
-  const handleSyncMedia = async () => {
-    try {
-      console.log('sync media');
-      const response = await fetchAuthenticatedApi('/syncMedia', {method: 'PUT'});
-      setMedia(response.data);
-    } catch (error) {
-      console.error('Error fetching media data:', error);
-    }
-  };
-
-  const handleDisconnect = async () => {
-    try {
-      await axios.post('https://localhost:3000/authInsApi/disconnect');
-      setIsConnected(false);
-      setMedia([]);
-      localStorage.removeItem('instagram_token');
-    } catch (error) {
-      console.error('Error during disconnect:', error);
     }
   };
 
@@ -50,12 +33,10 @@ export const IgProvider = ({children}) => {
     <IgContext.Provider
       value={{
         isConnected,
-        media,
-        setMedia,
+        data,
+        setData,
         setIsConnected,
-        fetchMediaData,
-        handleDisconnect,
-        handleSyncMedia
+        fetchData
       }}
     >
       {children}

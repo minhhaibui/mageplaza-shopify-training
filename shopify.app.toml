@@ -2,7 +2,7 @@
 
 name = "avada-instagram"
 client_id = "274ef8be29f03d7b7f924915eefbcac3"
-application_url = "https://computing-flesh-dive-regard.trycloudflare.com/auth/shopify"
+application_url = "https://lighter-genes-old-speech.trycloudflare.com/auth/shopify"
 embedded = true
 
 [access_scopes]
@@ -11,9 +11,9 @@ use_legacy_install_flow = true
 
 [auth]
 redirect_urls = [
-  "https://computing-flesh-dive-regard.trycloudflare.com/auth/shopify/callback",
-  "https://computing-flesh-dive-regard.trycloudflare.com/authSa/shopify/callback",
-  "https://computing-flesh-dive-regard.trycloudflare.com/auth/shopify/embed/callback",
+  "https://lighter-genes-old-speech.trycloudflare.com/auth/shopify/callback",
+  "https://lighter-genes-old-speech.trycloudflare.com/authSa/shopify/callback",
+  "https://lighter-genes-old-speech.trycloudflare.com/auth/shopify/embed/callback",
   "https://localhost:3000/auth/shopify/callback",
   "https://localhost:3000/authSa/shopify/callback",
   "https://localhost:3000/auth/shopify/embed/callback"

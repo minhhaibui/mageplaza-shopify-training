@@ -11,14 +11,16 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.7.4",
-    "@babel/preset-env": "^7.7.4",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/preset-react": "^7.24.7",
     "babel-core": "^6.26.3",
-    "babel-loader": "^8.0.6",
+    "babel-loader": "^8.3.0",
     "babel-preset-es2015": "^6.24.1",
     "webpack": "^4.41.2"
   },
   "dependencies": {
     "date-fns": "^3.6.0",
-    "preact": "^10.22.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

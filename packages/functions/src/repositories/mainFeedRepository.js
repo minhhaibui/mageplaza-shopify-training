@@ -5,8 +5,8 @@ const firestore = new Firestore();
 /** @type CollectionReference */
 const feedRef = firestore.collection('feed');
 
-export async function getFeedByShopId(id) {
-  const docs = await feedRef.where('shopId', '==', id).get();
+export async function getFeedByShopId(shopId) {
+  const docs = await feedRef.where('shopId', '==', shopId).get();
   if (docs.empty) {
     return null;
   }

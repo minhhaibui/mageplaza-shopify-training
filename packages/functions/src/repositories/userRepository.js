@@ -4,6 +4,17 @@ const firestore = new Firestore();
 /** @type CollectionReference */
 const userRef = firestore.collection('user');
 
+export async function getUser() {
+  const querySnapshot = await userRef.get();
+  if (querySnapshot.empty) {
+    return null;
+  }
+  const userDoc = querySnapshot.docs[0];
+  const user = userDoc.data();
+  user.id = userDoc.id;
+  return user;
+}
+
 export async function getUserByUserId(userId) {
   try {
     const querySnapshot = await userRef.where('userId', '==', userId).get();

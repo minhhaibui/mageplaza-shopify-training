@@ -2,15 +2,9 @@ import {Button, Card, InlineStack, Text} from '@shopify/polaris';
 import React, {useContext} from 'react';
 
 import {IgContext} from '../../context/IgContext';
+import {fetchAuthenticatedApi} from '../../helpers';
 const LoginIg = () => {
-  const {
-    media,
-    handleSyncMedia,
-    isConnected,
-    setIsConnected,
-    fetchMediaData,
-    handleDisconnect
-  } = useContext(IgContext);
+  const {data, setData, isConnected, setIsConnected, fetchData} = useContext(IgContext);
   const handleConnectIg = () => {
     const width = 600;
     const height = 700;
@@ -27,16 +21,36 @@ const LoginIg = () => {
       const interval = setInterval(() => {
         if (popup.closed) {
           clearInterval(interval);
-          const token = localStorage.getItem('instagram_token');
-          if (token) {
+          const logined = localStorage.getItem('logined');
+          if (logined) {
             setIsConnected(true);
-            fetchMediaData(token);
+            fetchData();
           }
         }
       }, 1000);
     }
   };
 
+  const handleDisconnect = async () => {
+    try {
+      await axios.post('https://localhost:3000/authInsApi/disconnect');
+      setIsConnected(false);
+      localStorage.removeItem('logined');
+      setData([]);
+    } catch (error) {
+      console.error('Error during disconnect:', error);
+    }
+  };
+
+  const handleSyncMedia = async () => {
+    try {
+      console.log('sync media');
+      const response = await fetchAuthenticatedApi('/syncMedia', {method: 'PUT'});
+      setData(response.data);
+    } catch (error) {
+      console.error('Error fetching media data:', error);
+    }
+  };
   return (
     <>
       <Card>
@@ -46,7 +60,7 @@ const LoginIg = () => {
           </Button>
         ) : (
           <InlineStack gap={200}>
-            <Text fontWeight="bold">Connected to @{media?.userId}</Text>
+            <Text fontWeight="bold">Connected to @{data?.userData?.userName}</Text>
             <Button variant="plain" onClick={handleConnectIg} textAlign="center">
               Change Account
             </Button>

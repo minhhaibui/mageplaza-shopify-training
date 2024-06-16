@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Grid, Page} from '@shopify/polaris';
 import {fetchAuthenticatedApi} from '../helpers';
 import MainFeed from '../components/DashBoard/MainFeed';
@@ -7,7 +7,6 @@ import {IgProvider} from '../context/IgContext';
 
 const DashBoard = () => {
   const [feedConfig, setFeedConfig] = useState({});
-  let feedDefault = {};
   async function callApi() {
     const data = await fetchAuthenticatedApi('/feed');
     if (data) {
@@ -18,9 +17,6 @@ const DashBoard = () => {
     callApi();
   }, []);
 
-  if (feedConfig) {
-    feedDefault = feedConfig;
-  }
   console.log(feedConfig);
   const handleSaveFeed = async newConfig => {
     setFeedConfig(newConfig);
@@ -32,11 +28,10 @@ const DashBoard = () => {
       <IgProvider>
         <Grid>
           <Grid.Cell columnSpan={{xs: 6, sm: 6, md: 3, lg: 4, xl: 4}}>
-            <MainFeed onSaveFeed={handleSaveFeed} feedDefault={feedDefault}></MainFeed>
+            <MainFeed onSaveFeed={handleSaveFeed} feedDefault={feedConfig}></MainFeed>
           </Grid.Cell>
           <Grid.Cell columnSpan={{xs: 6, sm: 6, md: 3, lg: 8, xl: 8}}>
             <Preview feedConfig={feedConfig}></Preview>
-            {/* <GlobalComponent></GlobalComponent> */}
           </Grid.Cell>
         </Grid>
       </IgProvider>

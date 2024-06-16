@@ -1,11 +1,13 @@
-import InstagramApi from '../helpers/instagramApi';
-import {addOneUser, deleteUserById} from '../repositories/userRepository';
+import {addOneUser, deleteUserById, getUser} from '../repositories/userRepository';
 
-const igApi = new InstagramApi();
-
-export async function addUser(accessToken, tokenExpires) {
-  const user = await igApi.getCurrentUser(accessToken);
-  ctx.state.userCurrent = user;
+export async function getUserCurrent(ctx) {
+  const data = await getUser();
+  console.log('userCall api_________________', data);
+  ctx.body = {
+    data
+  };
+}
+export async function addUser(user, accessToken, tokenExpires) {
   const data = {
     accessToken,
     userId: user.id,

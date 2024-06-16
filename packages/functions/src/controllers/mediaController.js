@@ -1,4 +1,4 @@
-import {getCurrentShop} from '../helpers/auth';
+import {getCurrentShop, getTokenUserIg} from '../helpers/auth';
 import {checkIgMediaUrlValid} from '../helpers/igHelpers';
 import InstagramApi from '../helpers/instagramApi';
 import {
@@ -12,9 +12,8 @@ const igApi = new InstagramApi();
 
 export async function getMedia(ctx) {
   console.log('_________________________get media______________________');
-  // const ctxtest = ctx.state;
   const shopId = getCurrentShop(ctx);
-  const token = ctx.cookies.get('instagram_token');
+  const token = getTokenUserIg(ctx);
   const [newMedia, currentUser, mediaData] = await Promise.all([
     igApi.fetchMediaData(token),
     igApi.getCurrentUser(token),
@@ -65,7 +64,7 @@ export async function getMedia(ctx) {
 
 export async function handleSyncMedia(ctx) {
   const shopId = getCurrentShop(ctx);
-  const token = ctx.cookies.get('instagram_token');
+  const token = getTokenUserIg(ctx);
 
   const [newMedia, currentUser] = await Promise.all([
     igApi.fetchMediaData(token),

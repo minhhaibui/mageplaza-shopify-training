@@ -60,6 +60,10 @@
         "function": "authInsApi"
       },
       {
+        "source": "/clientApi/**",
+        "function": "clientApi"
+      },
+      {
         "source": "/app/api/v1/**",
         "function": "clientApi"
       },
