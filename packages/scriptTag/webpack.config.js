@@ -4,18 +4,13 @@ const Dotenv = require('dotenv-webpack');
 const isProduction = process.env.NODE_ENV === 'production';
 const environmentPath = !process.env.ENVIRONMENT ? '.env' : `.env.${process.env.ENVIRONMENT}`;
 
-/**
- * @link https://stackoverflow.com/questions/47830273/babel-plugin-preset-files-are-not-allowed-to-export-objects-only-functions
- * @link https://stackoverflow.com/questions/33527653/babel-6-regeneratorruntime-is-not-defined
- */
 module.exports = {
   mode: isProduction ? 'production' : 'development',
-  entry: ['./src/index.js'],
+  entry: ['./index.js'], // Đường dẫn đến file entry ngoài cùng
   output: {
     path: path.resolve(__dirname, '../../static/scripttag'),
     filename: 'index.min.js'
   },
-
   module: {
     rules: [
       {
@@ -28,8 +23,16 @@ module.exports = {
             plugins: ['@babel/plugin-proposal-class-properties']
           }
         }
+      },
+      {
+        test: /\.css$/, // Thêm quy tắc để xử lý các tệp CSS
+        use: ['style-loader', 'css-loader'],
+        exclude: /node_modules/
       }
     ]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx']
   },
   stats: {
     colors: true

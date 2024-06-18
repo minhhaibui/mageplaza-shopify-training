@@ -76,9 +76,8 @@ export async function handleSyncMedia(ctx) {
   return (ctx.body = {
     success: true,
     data: {
-      userId: currentUser.id,
-      shopId: shopId,
-      media: newMedia
+      mediaData: {media: newMedia},
+      userData: currentUser
     }
   });
 }

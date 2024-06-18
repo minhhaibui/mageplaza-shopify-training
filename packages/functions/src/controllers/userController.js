@@ -11,7 +11,7 @@ export async function addUser(user, accessToken, tokenExpires) {
   const data = {
     accessToken,
     userId: user.id,
-    userName: user.username,
+    username: user.username,
     tokenExpires
   };
   await addOneUser(data);

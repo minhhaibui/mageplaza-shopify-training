@@ -1,5 +1,6 @@
 import {Button, Card, InlineStack, Text} from '@shopify/polaris';
 import React, {useContext} from 'react';
+import axios from 'axios';
 
 import {IgContext} from '../../context/IgContext';
 import {fetchAuthenticatedApi} from '../../helpers';
@@ -47,6 +48,7 @@ const LoginIg = () => {
       console.log('sync media');
       const response = await fetchAuthenticatedApi('/syncMedia', {method: 'PUT'});
       setData(response.data);
+      console.log('data when click sync', data);
     } catch (error) {
       console.error('Error fetching media data:', error);
     }
@@ -60,7 +62,7 @@ const LoginIg = () => {
           </Button>
         ) : (
           <InlineStack gap={200}>
-            <Text fontWeight="bold">Connected to @{data?.userData?.userName}</Text>
+            <Text fontWeight="bold">Connected to @{data?.userData?.username}</Text>
             <Button variant="plain" onClick={handleConnectIg} textAlign="center">
               Change Account
             </Button>

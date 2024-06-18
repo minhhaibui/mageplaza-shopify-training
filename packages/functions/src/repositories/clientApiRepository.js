@@ -17,10 +17,16 @@ export async function getIGDataByShopDomain(shopifyDomain) {
       findMediaByShopId(shopId),
       getUser()
     ]);
+
+    const {username, userId} = user;
+    const simplifiedUser = {
+      username,
+      userId
+    };
     return {
       mainFeed,
-      media,
-      user
+      media: {media: media.media},
+      user: simplifiedUser
     };
   } catch (error) {
     console.error(error);
