@@ -1,6 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, lazy, Suspense, useRef} from 'react';
 import {formatTimestampToDate} from '../../helpers/formatDate';
 import './globalPreview.css';
+const PopupPreview = lazy(() => import('./PopupPreview'));
+const CanvasImage = lazy(() => import('./CanvasImage'));
 
 const GlobalPreview = ({feedConfig = {columns: 1, postSpacing: 0}, media, user}) => {
   const {columns, postSpacing} = feedConfig;
@@ -37,9 +39,7 @@ const GlobalPreview = ({feedConfig = {columns: 1, postSpacing: 0}, media, user})
             onMouseLeave={handleMouseLeave}
             onClick={() => handleItemClick(item)}
           >
-            {item.media_type === 'IMAGE' && (
-              <img src={item.media_url} alt={`Image ${index + 1}`} className="media-image" />
-            )}
+            {item.media_type === 'IMAGE' && <CanvasImage imageUrl={item.media_url}></CanvasImage>}
             {item.media_type === 'VIDEO' && (
               <video controls className="media-video">
                 <source src={item.media_url} type="video/mp4" />
@@ -54,37 +54,11 @@ const GlobalPreview = ({feedConfig = {columns: 1, postSpacing: 0}, media, user})
           </div>
         ))}
       </div>
-      {selectedItem && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close-button" onClick={closeModal}>
-              &times;
-            </span>
-            <div className="media-container">
-              {selectedItem.media_type === 'IMAGE' && (
-                <img src={selectedItem.media_url} alt="Media" className="media-image" />
-              )}
-              {selectedItem.media_type === 'VIDEO' && (
-                <video controls className="media-video">
-                  <source src={selectedItem.media_url} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              )}
-
-              <div className="media-details">
-                <div className="avatar">H</div>
-                <div className="">
-                  <p>
-                    <b className="user-name">{user?.username}</b>
-                    <span>{selectedItem.caption}</span>
-                  </p>
-                  <p>{formatTimestampToDate(selectedItem.timestamp)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* <Suspense>
+        {selectedItem && (
+          <PopupPreview selectedItem={selectedItem} user={user} closeModal={closeModal} />
+        )}
+      </Suspense> */}
     </div>
   );
 };

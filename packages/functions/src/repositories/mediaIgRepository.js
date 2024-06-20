@@ -1,8 +1,9 @@
 import {Firestore} from '@google-cloud/firestore';
-
+import InstagramApi from '../helpers/instagramApi';
 const firestore = new Firestore();
 /** @type CollectionReference */
 const mediaRef = firestore.collection('media');
+const igApi = new InstagramApi();
 
 export async function findMediaByShopId(shopId) {
   try {

@@ -47,7 +47,10 @@ const LoginIg = () => {
     try {
       console.log('sync media');
       const response = await fetchAuthenticatedApi('/syncMedia', {method: 'PUT'});
-      setData(response.data);
+      if (response) {
+        setData(response.data);
+      }
+
       console.log('data when click sync', data);
     } catch (error) {
       console.error('Error fetching media data:', error);

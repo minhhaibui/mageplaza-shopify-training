@@ -5,14 +5,18 @@ const firestore = new Firestore();
 const userRef = firestore.collection('user');
 
 export async function getUser() {
-  const querySnapshot = await userRef.get();
-  if (querySnapshot.empty) {
-    return null;
+  try {
+    const querySnapshot = await userRef.get();
+    if (querySnapshot.empty) {
+      return null;
+    }
+    const userDoc = querySnapshot.docs[0];
+    const user = userDoc.data();
+    user.id = userDoc.id;
+    return user;
+  } catch (error) {
+    return error;
   }
-  const userDoc = querySnapshot.docs[0];
-  const user = userDoc.data();
-  user.id = userDoc.id;
-  return user;
 }
 
 export async function getUserByUserId(userId) {
@@ -33,7 +37,11 @@ export async function getUserByUserId(userId) {
 }
 
 export function addOneUser(user) {
-  return userRef.add(user);
+  try {
+    return userRef.add(user);
+  } catch (error) {
+    return error;
+  }
 }
 
 export async function deleteUserById(userId) {
@@ -49,6 +57,6 @@ export async function deleteUserById(userId) {
     console.log(`User with userId '${userId}' has been successfully deleted.`);
   } catch (error) {
     console.error(`Error deleting user with userId '${userId}':`, error);
-    throw error;
+    return error;
   }
 }

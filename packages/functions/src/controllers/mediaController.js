@@ -48,7 +48,8 @@ export async function getMedia(ctx) {
   if (hasExpiredMedia) {
     console.log('________________refreshing expired media URLs____________');
     await refreshAllMediaUrls(shopId, token);
-    const updatedMediaData = await getMediaDataByShopId(shopId);
+    const updatedMediaData = await findMediaByShopId(shopId);
+    console.log('___________________mediaRefresh______________', updatedMediaData);
     return (ctx.body = {
       success: true,
       data: updatedMediaData

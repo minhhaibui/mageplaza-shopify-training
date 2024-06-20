@@ -1,30 +1,16 @@
-import React, {useEffect, useState} from 'react';
-import GlobalPreview from '../../assets/src/components/Global/GlobalPreview'; // Điều chỉnh đường dẫn nếu cần
-import {getAPI} from './helppers/getApi'; // Điều chỉnh đường dẫn nếu cần
+import React, {useEffect, useState, lazy, Suspense} from 'react';
+const GlobalPreview = lazy(() => import('../../assets/src/components/Global/GlobalPreview'));
+
+import {useFetchData} from './helppers/getApi'; // Điều chỉnh đường dẫn nếu cần
 
 const App = () => {
-  const [dataIg, setDataIg] = useState();
-
-  const fetchData = async () => {
-    const url =
-      'https://localhost:3000/clientApi/instagram?shoifyDomain=avada-tranining.myshopify.com';
-    try {
-      const data = await getAPI(url);
-      if (data) {
-        setDataIg(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const {data, loading, error} = useFetchData();
 
   return (
     <>
-      <GlobalPreview feedConfig={dataIg?.mainFeed} media={dataIg?.media} user={dataIg?.user} />
+      <Suspense>
+        <GlobalPreview feedConfig={data?.mainFeed} media={data?.media} user={data?.user} />
+      </Suspense>
     </>
   );
 };

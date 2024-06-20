@@ -1,16 +1,9 @@
-// avada-instagram.js
-
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './src/App';
 
 const createReactContainer = () => {
-  let container = document.getElementById('react-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'react-container';
-    document.querySelector('.avada-instagram-section').appendChild(container);
-  }
+  let container = document.getElementById('ig_container');
   return container;
 };
 

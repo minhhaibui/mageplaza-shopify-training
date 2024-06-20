@@ -7,7 +7,7 @@ const Preview = ({feedConfig}) => {
   const {data} = useContext(IgContext);
   console.log('media priview', data);
   return (
-    <Box>
+    <>
       <LegacyCard title="Preview" sectioned>
         <GlobalPreview
           feedConfig={feedConfig}
@@ -15,7 +15,7 @@ const Preview = ({feedConfig}) => {
           user={data.userData}
         ></GlobalPreview>
       </LegacyCard>
-    </Box>
+    </>
   );
 };
 

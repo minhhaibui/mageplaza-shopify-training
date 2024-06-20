@@ -1,4 +1,3 @@
-// IgContext.js
 import React, {createContext, useState, useEffect} from 'react';
 import {fetchAuthenticatedApi} from '../helpers';
 export const IgContext = createContext();

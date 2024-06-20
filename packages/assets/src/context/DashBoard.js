@@ -16,10 +16,11 @@ const DashBoard = () => {
   useEffect(() => {
     callApi();
   }, []);
+
+  console.log(feedConfig);
   const handleSaveFeed = async newConfig => {
-    setFeedConfig(newConfig.feed);
-    console.log('newconfig', newConfig);
-    await fetchAuthenticatedApi('/feed', {body: newConfig, method: 'PUT'});
+    setFeedConfig(newConfig);
+    await fetchAuthenticatedApi('/feed', {body: feedConfig, method: 'PUT'});
   };
 
   return (

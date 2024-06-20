@@ -1,5 +1,6 @@
 import {getFeedByShopId, updateFeedByShopId} from '@functions/repositories/mainFeedRepository';
 import {getCurrentShop} from '../helpers/auth';
+import {createOrUpdateMetafield} from '../repositories/metafieldRepository';
 
 // import {addNotification} from '../repositories/notificationRepository';
 
@@ -18,18 +19,28 @@ export async function getFeed(ctx) {
 }
 
 export async function updateFeeds(ctx) {
-  const shopId = getCurrentShop(ctx);
-  console.log({shopId});
-  const feed = ctx.req.body;
-  console.log('body', feed);
-  if (!feed) {
-    return (ctx.body = {
-      error: 'Missing input'
-    });
+  try {
+    const shopId = getCurrentShop(ctx);
+    const {feed, mediaCount} = ctx.req.body;
+    const metaFieldIg = {...feed, mediaCount};
+
+    console.log('feed', feed);
+    console.log('metafield___________', metaFieldIg);
+
+    if (!feed) {
+      return (ctx.body = {
+        error: 'Missing input'
+      });
+    }
+    await Promise.all([updateFeedByShopId(shopId, feed), createOrUpdateMetafield(metaFieldIg)]);
+    // await updateFeedByShopId(shopId, feed);
+    // await createOrUpdateMetafield(metaFieldIg);
+    ctx.status = 200;
+    ctx.body = {
+      success: true
+    };
+  } catch (error) {
+    console.log(error);
+    return;
   }
-  await updateFeedByShopId(shopId, feed);
-  ctx.status = 200;
-  ctx.body = {
-    success: true
-  };
 }

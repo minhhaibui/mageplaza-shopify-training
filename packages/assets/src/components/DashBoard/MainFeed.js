@@ -1,11 +1,16 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Box, BlockStack, Card, Button, FormLayout, TextField, Select} from '@shopify/polaris';
+import {IgContext} from '../../context/IgContext';
+
 // import axios from 'axios';
 import LoginIg from './LoginIg';
 
 const MainFeed = ({onSaveFeed, feedDefault}) => {
+  const {data} = useContext(IgContext);
+  const mediaCount = data?.mediaData?.media?.length;
+  console.log('____media count in main feed______', mediaCount);
   const [feed, setFeed] = useState(feedDefault);
-
+  console.log('___________feed', feed);
   useEffect(() => {
     if (feedDefault) {
       setFeed(feedDefault);
@@ -20,7 +25,8 @@ const MainFeed = ({onSaveFeed, feedDefault}) => {
   };
 
   const handleSubmit = () => {
-    onSaveFeed(feed);
+    console.log('onsubmid fee', feed);
+    onSaveFeed({feed, mediaCount});
   };
 
   return (
