@@ -15,7 +15,7 @@ export async function getFeed(ctx) {
   const shopId = getCurrentShop(ctx);
   const feed = await getFeedByShopId(shopId);
   ctx.status = 200;
-  ctx.body = {feed};
+  ctx.body = {success: true, data: feed};
 }
 
 export async function updateFeeds(ctx) {

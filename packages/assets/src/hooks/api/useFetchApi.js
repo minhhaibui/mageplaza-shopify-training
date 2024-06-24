@@ -35,7 +35,7 @@ export function useFetchApi({
       const query = params ? separateChar + queryString.stringify(params) : '';
       const resp = await fetchAuthenticatedApi(path + query);
 
-      console.log('data in resp', resp); // Debug log
+      console.log('data in resp', resp);
 
       if (resp.hasOwnProperty('pageInfo')) setPageInfo(resp.pageInfo);
       if (resp.hasOwnProperty('count')) setCount(resp.count);

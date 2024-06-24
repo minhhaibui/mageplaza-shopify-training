@@ -1,5 +1,5 @@
 import React, {createContext, useState, useEffect} from 'react';
-import {fetchAuthenticatedApi} from '../helpers';
+// import {fetchAuthenticatedApi} from '../helpers';
 import {useFetchApi} from '../hooks/api/useFetchApi';
 export const IgContext = createContext();
 

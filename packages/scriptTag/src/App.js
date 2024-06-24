@@ -4,7 +4,7 @@ const GlobalPreview = lazy(() => import('../../assets/src/components/Global/Glob
 import {useFetchData} from './helppers/getApi'; // Điều chỉnh đường dẫn nếu cần
 
 const App = () => {
-  const {data, loading, error} = useFetchData();
+  const {data} = useFetchData();
 
   return (
     <>
