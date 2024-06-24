@@ -13,7 +13,7 @@ import {handleError} from '@assets/services/errorService';
  * @param initQueries
  * @returns {{pageInfo: {}, data, setData, count, setCount, fetchApi, loading, fetched}}
  */
-export default function useFetchApi({
+export function useFetchApi({
   url,
   defaultData = [],
   initLoad = true,
@@ -33,7 +33,10 @@ export default function useFetchApi({
       const path = apiUrl || url;
       const separateChar = path.includes('?') ? '&' : '?';
       const query = params ? separateChar + queryString.stringify(params) : '';
-      const resp = await api(path + query);
+      const resp = await fetchAuthenticatedApi(path + query);
+
+      console.log('data in resp', resp); // Debug log
+
       if (resp.hasOwnProperty('pageInfo')) setPageInfo(resp.pageInfo);
       if (resp.hasOwnProperty('count')) setCount(resp.count);
       if (resp.hasOwnProperty('additionalData')) {
@@ -61,9 +64,9 @@ export default function useFetchApi({
 
   useEffect(() => {
     if (initLoad && !fetched) {
-      fetchApi(url, initQueries).then(() => {});
+      fetchApi(url, initQueries);
     }
-  }, []);
+  }, [url, initQueries]);
 
   return {
     fetchApi,

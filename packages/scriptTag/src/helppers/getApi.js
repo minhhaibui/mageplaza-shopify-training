@@ -1,19 +1,5 @@
 import {useState, useEffect} from 'react';
 
-export async function getAPI(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      return response.status;
-    }
-    const data = await response.json();
-    if (!data) return null;
-    return data;
-  } catch (error) {
-    throw new Error(`Error fetching data: ${error.message}`);
-  }
-}
-
 export const useFetchData = (
   url = 'https://localhost:3000/clientApi/instagram?shoifyDomain=avada-tranining.myshopify.com'
 ) => {

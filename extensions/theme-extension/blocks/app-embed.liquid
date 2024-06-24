@@ -25,21 +25,29 @@
   </div>   
 </div>
 
- <script defer>
+<script defer>
   document.addEventListener('DOMContentLoaded', function() {
-    const grid = document.getElementById('grid');
-    const feedColumns = {{ feed_columns }};
-    const feedCountMedia = {{ feed_countMedia }};
-    const feedPostSpacing = {{ feed_postSpacing }};
-    
-    const feedRows = Math.ceil(feedCountMedia / feedColumns); //3.2=>4
-    
+    function updateContainerHeight() {
+      const grid = document.getElementById('grid');
+      const igContainer = document.getElementById('ig_container');
+      const feedColumns = {{ feed_columns }};
+      const feedCountMedia = {{ feed_countMedia }};
+      const feedPostSpacing = {{ feed_postSpacing }};
+      const feedRows = Math.ceil(feedCountMedia / feedColumns); // 3.2 => 4
+      const totalGap = (feedRows - 1) * feedPostSpacing;
+      let itemHeight = grid ? grid.clientHeight : igContainer.clientHeight;
+      const totalHeight = itemHeight + totalGap;
+      const parentRoot = igContainer.parentElement.parentElement.parentElement;
+      parentRoot.style.height = `${totalHeight}px`;
+      console.log("resize", totalHeight);
+    }
 
-    const totalGap = (feedRows - 1) * feedPostSpacing;
-    const totalHeight = grid.clientHeight + totalGap  ;
+    updateContainerHeight();
 
-    const igContainer = document.getElementById('ig_container');
-    const parentRoot = igContainer.parentElement.parentElement.parentElement;
-    parentRoot.style.height = `${totalHeight}px`;
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(updateContainerHeight, 1000); 
+    });
   });
-</script> 
+</script>
